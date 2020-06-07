@@ -7,6 +7,9 @@ char *conf = "./server.conf"; //弄成全局的
 
 //struct Map court;
 
+#define MAXTASK 100
+#define MAXTHREAD 20
+
 struct User *rteam;
 struct User *bteam;
 int data_port;
@@ -115,31 +118,50 @@ int main(int argc, char **argv) {
 
 void *blue_epoll() {
     DBG(BLUE"Blue thread is ready.\n"NONE);
-    struct epoll_event blue_events[MAX * 2];   
+    struct epoll_event blue_events[MAX * 2];
+    
+    TaskQueue blue_queue;
+    TaskQueueInit(&blue_queue, MAXTASK);
+    pthread_t *tid = (pthread_t *)calloc(MAXTHREAD, sizeof(pthread_t));
+    for (int i = 0; i < MAXTHREAD; i++) {
+        pthread_create(&tid[i], NULL, blue_thread_run, (void *)&blue_queue);
+    }
+    
     while (1) {
         int blue_nfds = epoll_wait(blue_epoll_fd, blue_events, MAX * 2, -1);
         for (int i = 0; i < blue_nfds; i++) {
-            DBG(BLUE "BULE EPOLL" NONE " :  Ding with %dth\n", i);
-            char buff[512] = {0};
-            recv(blue_events[i].data.fd, buff, sizeof(buff), 0);
-            printf(PINK "BLUE RECV" NONE ": %s\n", buff);
-            send(blue_events[i].data.fd, buff, sizeof(buff), 0);
+            TaskQueuePush(&blue_queue, blue_events[i].data.fd);
         }
+            //DBG(BLUE "BULE EPOLL" NONE " :  Ding with %dth\n", i);
+            //char buff[512] = {0};
+            //recv(blue_events[i].data.fd, buff, sizeof(buff), 0);
+            //printf(PINK "BLUE RECV" NONE ": %s\n", buff);
+            //send(blue_events[i].data.fd, buff, sizeof(buff), 0);
     }
     return NULL;
 }
 
 void *red_epoll() {
     DBG(RED"Red thread is ready.\n"NONE);
-    struct epoll_event red_events[MAX * 2];   
+    struct epoll_event red_events[MAX * 2];
+
+    TaskQueue red_queue;
+    TaskQueueInit(&red_queue, MAXTASK);
+    pthread_t *tid = (pthread_t *)calloc(MAXTHREAD, sizeof(pthread_t));
+    for (int i = 0; i < MAXTHREAD; i++) {
+        pthread_create(&tid[i], NULL, red_thread_run, (void *)&red_queue);
+    }
+    
+
     while (1) {
         int red_nfds = epoll_wait(red_epoll_fd, red_events, MAX * 2, -1);
         for (int i = 0; i < red_nfds; i++) {
-            DBG(RED "RED EPOLL" NONE " :  Ding with %dth\n", i);
-            char buff[512] = {0};
-            recv(red_events[i].data.fd, buff, sizeof(buff), 0);
-            printf(PINK "RED RECV" NONE ": %s\n", buff);
-            send(red_events[i].data.fd, buff, sizeof(buff), 0);
+            TaskQueuePush(&red_queue, red_events[i].data.fd);
+            //DBG(RED "RED EPOLL" NONE " :  Ding with %dth\n", i);
+            //char buff[512] = {0};
+            //recv(red_events[i].data.fd, buff, sizeof(buff), 0);
+            //printf(PINK "RED RECV" NONE ": %s\n", buff);
+            //send(red_events[i].data.fd, buff, sizeof(buff), 0);
         }
     }
     return NULL;
