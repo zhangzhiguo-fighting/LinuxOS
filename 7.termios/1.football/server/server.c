@@ -1,6 +1,4 @@
-#include "../common/color.h"
 #include "../common/udp_server.h"
-#include "../common/common.h"
 #include "../common/head.h"
 #include "../game.h"
 #include "../common/udp_epoll.h"

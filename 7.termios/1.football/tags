@@ -39,6 +39,7 @@ YELLOW	common/color.h	18;"	d
 _CHATROOM_H	common/chatroom.h	9;"	d
 _COLOR_H	common/color.h	9;"	d
 _COMMON_H	common/common.h	9;"	d
+_DATATYPE_H	common/datatype.h	2;"	d
 _GAME_H	game.h	2;"	d
 _GLOBAL_H	common/global.h	2;"	d
 _TCP_CLIENT_H	common/tcp_client.h	9;"	d
@@ -64,7 +65,6 @@ destroy_win	game.h	/^void destroy_win(WINDOW * win) {$/;"	f
 dirx	common/datatype.h	/^    int dirx;$/;"	m	struct:TransMsg
 diry	common/datatype.h	/^    int diry;$/;"	m	struct:TransMsg
 draw	game.h	/^void *draw(void *arg) {$/;"	f
-epoll_fd	server/server.c	/^int epoll_fd;$/;"	v
 flag	common/chatroom.h	/^    int flag;$/;"	m	struct:Msg
 flag	common/datatype.h	/^    int flag; \/\/未效应次数,判断是否在线$/;"	m	struct:User
 from	common/chatroom.h	/^    char from[20];$/;"	m	struct:Msg
@@ -106,7 +106,7 @@ socket_udp	common/udp_client.c	/^int socket_udp() {$/;"	f
 start	common/datatype.h	/^    struct Point start; \/\/已知起点，长，宽，便可以绘制一个矩形$/;"	m	struct:Map	typeref:struct:Map::Point
 team	common/datatype.h	/^    int team; \/\/0 READ 1 BLUE$/;"	m	struct:LogRequest
 team	common/datatype.h	/^    int team;$/;"	m	struct:User
-type	common/datatype.h	/^    int type; \/\/0 success 1failed$/;"	m	struct:LogResponse
+type	common/datatype.h	/^    int type; \/\/0 success 1 failed$/;"	m	struct:LogResponse
 udp_accept	common/udp_epoll.c	/^int udp_accept(int epollfd, int fd) {$/;"	f
 udp_connect	common/udp_epoll.c	/^int udp_connect(int epollfd, struct sockaddr_in * serveraddr) {$/;"	f
 w_gotoxy_putc	game.h	/^void w_gotoxy_putc(WINDOW *win, int x, int y, int c){$/;"	f

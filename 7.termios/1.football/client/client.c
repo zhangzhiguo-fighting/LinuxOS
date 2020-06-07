@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
 
     sendto(sockfd, (void *)&request, sizeof(request), 0, (struct sockaddr *)&server, len);
     
-    int ret = recvfrom(sockfd, (void *)response, sizeof(response), 0, (struct sockaddr *)&server, &len);
+    int ret = recvfrom(sockfd, (void *)&response, sizeof(response), 0, (struct sockaddr *)&server, &len);
     
     if (ret != sizeof(response) || response.type) {
         DBG(RED"ERROR : "NONE"The Game Server refused your login.\n\rThis May be helpfull: %s\n", response.msg); 
