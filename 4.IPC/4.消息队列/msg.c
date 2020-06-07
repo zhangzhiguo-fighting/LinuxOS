@@ -13,6 +13,7 @@ struct msgbuf {
     char mtext[80];
 };
 
+/*封装的错误提示*/
 static void usage(char *prog_name, char *msg) {
     if (msg != NULL)
         fputs(msg, stderr);
@@ -30,12 +31,12 @@ static void send_msg(int qid, int msgtype) {
     struct msgbuf msg;
     time_t t;
 
-    msg.mtype = msgtype;
+    msg.mtype = msgtype; //定义消息类型
 
     time(&t);
     snprintf(msg.mtext, sizeof(msg.mtext), "a message at %s", ctime(&t));
 
-    if (msgsnd(qid, (void *) &msg, sizeof(msg.mtext), IPC_NOWAIT) == -1) {
+    if (msgsnd(qid, (void *) &msg, sizeof(msg.mtext), IPC_NOWAIT) == -1) { //向消息队列写消息
         perror("msgsnd error");
         exit(EXIT_FAILURE);
     }
