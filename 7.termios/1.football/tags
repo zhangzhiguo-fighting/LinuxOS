@@ -42,7 +42,6 @@ PINK	common/color.h	23;"	d
 Point	common/datatype.h	/^struct Point{$/;"	s
 RED	common/color.h	14;"	d
 RecvMsg	common/chatroom.h	/^struct RecvMsg {$/;"	s
-SUB_REACTOR_H	common/sub_reactor.h	2;"	d
 Score	game.h	/^WINDOW *Football, *Message, *Help, *Score, *Write;$/;"	v
 TransMsg	common/datatype.h	/^struct TransMsg{$/;"	s
 User	common/datatype.h	/^struct User{$/;"	s
@@ -54,6 +53,8 @@ _COMMON_H	common/common.h	9;"	d
 _DATATYPE_H	common/datatype.h	2;"	d
 _GAME_H	game.h	2;"	d
 _GLOBAL_H	common/global.h	2;"	d
+_HEART_BEAT_H	common/heart_beat.h	2;"	d
+_SUB_REACTOR_H	common/sub_reactor.h	2;"	d
 _TCP_CLIENT_H	common/tcp_client.h	9;"	d
 _TCP_SERVER_H	common/tcp_server.h	9;"	d
 _TCP_SERVER_H	common/udp_client.h	2;"	d
@@ -63,12 +64,12 @@ _UDP_EPOLL_H	common/udp_epoll.h	2;"	d
 add_event	common/udp_epoll.c	/^void add_event(int epollfd, int fd, int events) {$/;"	f
 add_event_ptr	common/udp_epoll.c	/^void add_event_ptr(int epollfd, int fd, int events, struct User *user) {$/;"	f
 add_to_sub_reactor	common/udp_epoll.c	/^void add_to_sub_reactor(struct User *user) {$/;"	f
-bepollfd	server/server.c	/^int bepollfd;$/;"	v
+bepollfd	server/server.c	/^int repollfd, bepollfd;$/;"	v
 bteam	server/server.c	/^struct User *bteam;$/;"	v	typeref:struct:User
 carry	common/datatype.h	/^    int carry;$/;"	m	struct:Ctrl
 chat_recv	common/chatroom.h	/^struct RecvMsg chat_recv(int fd) {$/;"	f
 chat_send	common/chatroom.h	/^int chat_send(struct Msg msg, int fd) {$/;"	f
-cond	common/thread_pool.h	/^    pthread_cond_t cond;$/;"	m	struct:task_queue
+cond	common/thread_pool.h	/^    pthread_cond_t cond; \/\/互斥条件$/;"	m	struct:task_queue
 conf	client/client.c	/^char *conf = ".\/football.conf";$/;"	v
 conf	server/server.c	/^char *conf = ".\/server.conf"; \/\/弄成全局的$/;"	v
 conf_ans	common/global.c	/^char conf_ans[50];$/;"	v
@@ -96,8 +97,6 @@ gotoxy_putc	game.h	/^void gotoxy_putc(int x, int y, int c) {$/;"	f
 gotoxy_puts	game.h	/^void gotoxy_puts(int x, int y, char* s) {$/;"	f
 head	common/thread_pool.h	/^    int head;$/;"	m	struct:task_queue
 heart_beat	common/heart_beat.c	/^void *heart_beat(void *arg) {$/;"	f
-heart_beat	common/heart_beat.h	/^    heart_beat() {}$/;"	f	class:heart_beat
-heart_beat	common/heart_beat.h	/^class heart_beat$/;"	c
 heart_beat_team	common/heart_beat.c	/^void heart_beat_team(struct User *team) {$/;"	f
 heigth	common/datatype.h	/^    int heigth; \/\/Row$/;"	m	struct:Map
 initfootball	game.h	/^void initfootball() {$/;"	f
@@ -117,12 +116,12 @@ msg	common/chatroom.h	/^    struct Msg msg;$/;"	m	struct:RecvMsg	typeref:struct:
 msg	common/datatype.h	/^    char msg[512];$/;"	m	struct:LogRequest
 msg	common/datatype.h	/^    char msg[512];$/;"	m	struct:LogResponse
 msg	common/datatype.h	/^    char msg[MAXMSG];$/;"	m	struct:FootBallMsg
-mutex	common/thread_pool.h	/^    pthread_mutex mutex;$/;"	m	struct:task_queue
+mutex	common/thread_pool.h	/^    pthread_mutex_t mutex;\/\/互斥量$/;"	m	struct:task_queue
 name	common/datatype.h	/^    char name[20]; \/\/Nmae of user$/;"	m	struct:LogRequest
 name	common/datatype.h	/^    char name[20];$/;"	m	struct:User
 online	common/datatype.h	/^    int online;$/;"	m	struct:User
 port	server/server.c	/^int port = 0;$/;"	v
-repollfd	server/server.c	/^int repollfd;$/;"	v
+repollfd	server/server.c	/^int repollfd, bepollfd;$/;"	v
 retval	common/chatroom.h	/^    int retval;$/;"	m	struct:RecvMsg
 rteam	server/server.c	/^struct User *rteam;$/;"	v	typeref:struct:User
 server_ip	client/client.c	/^char server_ip[20] = {0};$/;"	v
@@ -154,4 +153,3 @@ w_gotoxy_puts	game.h	/^void w_gotoxy_puts(WINDOW *win, int x, int y, char *s) {$
 width	common/datatype.h	/^    int width; \/\/Column$/;"	m	struct:Map
 x	common/datatype.h	/^    int x;$/;"	m	struct:Point
 y	common/datatype.h	/^    int y;$/;"	m	struct:Point
-~heart_beat	common/heart_beat.h	/^    ~heart_beat() {}$/;"	f	class:heart_beat

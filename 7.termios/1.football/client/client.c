@@ -4,9 +4,20 @@
 char server_ip[20] = {0};
 int server_port = 0;
 char *conf = "./football.conf";
+int sockfd;
+
+void logout(int to_do) {
+    struct FootBallMsg msg;
+    memset(msg.msg, 0, sizeof(msg.msg));
+    msg.type = FT_LOGOUT;
+    send(sockfd, (void *)&msg, sizeof(msg), 0);
+    DBG(YELLOW"you have logout!"NONE"\n");
+    exit(1);
+}
 
 int main(int argc, char **argv) {
-    int opt, sockfd;
+    //int opt, sockfd;
+    int opt;
     struct LogRequest request;
     struct LogResponse response;
     bzero(&request, sizeof(request));
@@ -91,6 +102,8 @@ int main(int argc, char **argv) {
     connect(sockfd, (struct sockaddr *)&server, len);
     //recvfrom(sockfd, buf, sizeof(buf), 0, (struct sockaddr *)&server, &len);
     
+    signal(SIGINT, logout);
+
     pid_t pid;
     if ((pid = fork()) < 0) {
         perror("fork");
@@ -123,6 +136,7 @@ int main(int argc, char **argv) {
             fflush(stdout);
             scanf("%[^\n]s", msg.msg);
             getchar();
+            if (strlen(msg.msg) == 0) continue;
             send(sockfd, (void *)&msg, sizeof(msg), 0);
         }
     }
