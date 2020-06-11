@@ -1,32 +1,28 @@
-#include "../common/udp_server.h"
-#include "../common/head.h"
-#include "../game.h"
 #include "../common/udp_epoll.h"
+#include "../common/head.h"
+#include "../common/udp_server.h"
+#include "../common/thread_pool.h"
+#include "../common/sub_reactor.h"
+#include "../common/heart_beat.h"
+#include "../game.h"
 
 char *conf = "./server.conf"; //弄成全局的
 
 //struct Map court;
 
-#define MAXTASK 100
-#define MAXTHREAD 20
-
 struct User *rteam;
 struct User *bteam;
+
+int repollfd, bepollfd;
+
 int data_port;
 //int epoll_fd;
 int port = 0;
 
-int red_epoll_fd, blue_epoll_fd;
-pthread_t red_t, blue_t;
-
-
-void *red_epoll();
-void *blue_epoll();
-
 int main(int argc, char **argv) {
     int opt, listener, epoll_fd;
     //int port = 0;
-    pthread_t draw_t;
+    pthread_t draw_t, red_t, blue_t, heart_t;
     while ((opt = getopt(argc, argv, "p:")) != -1) {//:表示后面跟着有参数
         switch (opt) {
         case 'p':
@@ -66,19 +62,27 @@ int main(int argc, char **argv) {
     DBG(GREEN"INFO"NONE" : Server start on Port %d\n", port);//DEBUG，-D _D
     
     //pthread_create(&draw_t, NULL, draw, NULL);//Draw interface
-    pthread_create(&red_t, NULL, red_epoll, NULL);
-    pthread_create(&blue_t, NULL, blue_epoll, NULL);
     
     epoll_fd = epoll_create(MAX * 2);//由epoll_create 生成的epoll专用的文件描述符；
     //该函数生成一个epoll专用的文件描述符，其中的参数是指定生成描述符的最大范围。在linux-2.4.32内核中根据size大小初始化哈希表的大小，在linux2.6.10内核中该参数无用，使用红黑树管理所有的文件描述符，而不是hash。
-    
-    red_epoll_fd = epoll_create(MAX * 2);
-    blue_epoll_fd = epoll_create(MAX * 2);
-    
-    if (epoll_fd < 0 || red_epoll_fd < 0 || blue_epoll_fd < 0) {
+    repollfd = epoll_create(MAX);
+    bepollfd = epoll_create(MAX);
+
+
+    if (epoll_fd < 0 || repollfd < 0 || bepollfd < 0) {
         perror("epoll_creat");
         exit(1);
     }
+
+    struct task_queue redQueue;
+    struct task_queue blueQueue;
+
+    task_queue_init(&redQueue, MAX, repollfd);
+    task_queue_init(&blueQueue, MAX, bepollfd);
+
+    pthread_create(&red_t, NULL, sub_reactor, (void *)&redQueue);
+    pthread_create(&blue_t, NULL, sub_reactor, (void *)&blueQueue);
+    pthread_create(&heart_t, NULL, heart_beat, NULL);
 
     //声明epoll_event结构体的变量,ev用于注册事件,数组用于回传要处理的事件
     struct epoll_event ev, events[MAX * 2]; //用于回传代处理事件的数组
@@ -97,13 +101,24 @@ int main(int argc, char **argv) {
     
     while (1) {
         //w_gotoxy_puts(Message, 1, 1, "waiting for login");
-        int nfds = epoll_wait(epoll_fd, events, MAX * 2, -1); //该函数用于轮询I/O事件的发生；等待EPOLL事件的发生，相当于监听，至于相关的端口，需要在初始化EPOLL的时候绑定。
-
+        DBG(YELLOW"Main Thread"NONE" : before epoll_wait\n");
+        int nfds = epoll_wait(epoll_fd, events, MAX * 2, -1); //该函数用于轮询I/O事件的发生；
+        DBG(YELLOW"Main Thread"NONE" : After epoll_wait\n");
+        
         for (int i = 0; i < nfds; i++) {
-            DBG(YELLOW "EPOLL" NONE " : Doing with %dth\n", i);
-            if (events[i].data.fd = listener) {
+            struct User user;
+            char buff[512] = {0};
+            DBG(YELLOW"EPOLL"NONE" : Doing with %dth fd\n", i);
+            if (events[i].data.fd == listener) {
                 //accept();
-                udp_accept(epoll_fd, listener);
+                int new_fd = udp_accept(epoll_fd, listener, &user);
+                if (new_fd > 0) {
+                    DBG(YELLOW"Main Thread"NONE" :Add %s to %s sub_reactor.\n", user.name, (user.team ? "BLUE" : "RED"));
+                    add_to_sub_reactor(&user);
+                }
+            } else {
+                recv(events[i].data.fd, buff, sizeof(buff), 0);
+                printf(PINK"RECV"NONE" : %s\n", buff);
             }
             //char info[1024] = {0};
             //recvfrom(events[i].data.fd, (void *)info, sizeof(info), 0, (struct sockaddr *)&client, &len);
@@ -115,55 +130,3 @@ int main(int argc, char **argv) {
     }
     return 0;
 }
-
-void *blue_epoll() {
-    DBG(BLUE"Blue thread is ready.\n"NONE);
-    struct epoll_event blue_events[MAX * 2];
-    
-    TaskQueue blue_queue;
-    TaskQueueInit(&blue_queue, MAXTASK);
-    pthread_t *tid = (pthread_t *)calloc(MAXTHREAD, sizeof(pthread_t));
-    for (int i = 0; i < MAXTHREAD; i++) {
-        pthread_create(&tid[i], NULL, blue_thread_run, (void *)&blue_queue);
-    }
-    
-    while (1) {
-        int blue_nfds = epoll_wait(blue_epoll_fd, blue_events, MAX * 2, -1);
-        for (int i = 0; i < blue_nfds; i++) {
-            TaskQueuePush(&blue_queue, blue_events[i].data.fd);
-        }
-            //DBG(BLUE "BULE EPOLL" NONE " :  Ding with %dth\n", i);
-            //char buff[512] = {0};
-            //recv(blue_events[i].data.fd, buff, sizeof(buff), 0);
-            //printf(PINK "BLUE RECV" NONE ": %s\n", buff);
-            //send(blue_events[i].data.fd, buff, sizeof(buff), 0);
-    }
-    return NULL;
-}
-
-void *red_epoll() {
-    DBG(RED"Red thread is ready.\n"NONE);
-    struct epoll_event red_events[MAX * 2];
-
-    TaskQueue red_queue;
-    TaskQueueInit(&red_queue, MAXTASK);
-    pthread_t *tid = (pthread_t *)calloc(MAXTHREAD, sizeof(pthread_t));
-    for (int i = 0; i < MAXTHREAD; i++) {
-        pthread_create(&tid[i], NULL, red_thread_run, (void *)&red_queue);
-    }
-    
-
-    while (1) {
-        int red_nfds = epoll_wait(red_epoll_fd, red_events, MAX * 2, -1);
-        for (int i = 0; i < red_nfds; i++) {
-            TaskQueuePush(&red_queue, red_events[i].data.fd);
-            //DBG(RED "RED EPOLL" NONE " :  Ding with %dth\n", i);
-            //char buff[512] = {0};
-            //recv(red_events[i].data.fd, buff, sizeof(buff), 0);
-            //printf(PINK "RED RECV" NONE ": %s\n", buff);
-            //send(red_events[i].data.fd, buff, sizeof(buff), 0);
-        }
-    }
-    return NULL;
-}
-
