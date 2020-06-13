@@ -17,6 +17,7 @@ void logout(int signum) {
 }
 
 int main(int argc, char **argv) {
+
     int opt;
     struct LogRequest request;
     struct LogResponse response;

@@ -59,7 +59,7 @@ int main(int argc, char **argv) {
 
     DBG(GREEN"INFO"NONE" : Server start on Port %d\n", port);//DEBUG，-D _D
     
-    //pthread_create(&draw_t, NULL, draw, NULL);//Draw interface
+    pthread_create(&draw_t, NULL, draw, NULL);//Draw interface
     
     epoll_fd = epoll_create(MAX * 2);//由epoll_create 生成的epoll专用的文件描述符；
     //该函数生成一个epoll专用的文件描述符，其中的参数是指定生成描述符的最大范围。在linux-2.4.32内核中根据size大小初始化哈希表的大小，在linux2.6.10内核中该参数无用，使用红黑树管理所有的文件描述符，而不是hash。
