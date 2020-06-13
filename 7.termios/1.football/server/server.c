@@ -5,7 +5,7 @@
 #include "../common/sub_reactor.h"
 #include "../common/heart_beat.h"
 #include "../game.h"
-
+#include "../common/server_exit.h"
 char *conf = "./server.conf"; //弄成全局的
 
 //struct Map court;
@@ -15,7 +15,6 @@ struct User *bteam;
 
 int repollfd, bepollfd;
 
-int data_port;
 //int epoll_fd;
 int port = 0;
 
@@ -45,7 +44,6 @@ int main(int argc, char **argv) {
     }
     
     if (!port) port = atoi(get_value(conf, "PORT")); //未指定端口
-    data_port = atoi(get_value(conf, "DATAPORT"));
     court.width = atoi(get_value(conf, "COLS"));
     court.heigth = atoi(get_value(conf, "LINES"));
     court.start.x = 1;
@@ -83,6 +81,8 @@ int main(int argc, char **argv) {
     pthread_create(&red_t, NULL, sub_reactor, (void *)&redQueue);
     pthread_create(&blue_t, NULL, sub_reactor, (void *)&blueQueue);
     pthread_create(&heart_t, NULL, heart_beat, NULL);
+
+    signal(SIGINT, server_exit);
 
     //声明epoll_event结构体的变量,ev用于注册事件,数组用于回传要处理的事件
     struct epoll_event ev, events[MAX * 2]; //用于回传代处理事件的数组
