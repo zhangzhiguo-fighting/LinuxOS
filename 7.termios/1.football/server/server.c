@@ -4,7 +4,7 @@
 #include "../common/thread_pool.h"
 #include "../common/sub_reactor.h"
 #include "../common/heart_beat.h"
-#include "../game.h"
+#include "../common/game.h"
 #include "../common/server_exit.h"
 char *conf = "./server.conf"; //弄成全局的
 
@@ -58,9 +58,9 @@ int main(int argc, char **argv) {
     }
 
     DBG(GREEN"INFO"NONE" : Server start on Port %d\n", port);//DEBUG，-D _D
-    
+#ifndef _D    
     pthread_create(&draw_t, NULL, draw, NULL);//Draw interface
-    
+#endif
     epoll_fd = epoll_create(MAX * 2);//由epoll_create 生成的epoll专用的文件描述符；
     //该函数生成一个epoll专用的文件描述符，其中的参数是指定生成描述符的最大范围。在linux-2.4.32内核中根据size大小初始化哈希表的大小，在linux2.6.10内核中该参数无用，使用红黑树管理所有的文件描述符，而不是hash。
     repollfd = epoll_create(MAX);
@@ -99,6 +99,7 @@ int main(int argc, char **argv) {
     struct sockaddr_in client;
     socklen_t len = sizeof(client);
     
+    Show_Message( , , "Waiting for Login.", 1 );
     while (1) {
         //w_gotoxy_puts(Message, 1, 1, "waiting for login");
         DBG(YELLOW"Main Thread"NONE" : before epoll_wait\n");
@@ -113,8 +114,10 @@ int main(int argc, char **argv) {
                 //accept();
                 int new_fd = udp_accept(epoll_fd, listener, &user);
                 if (new_fd > 0) {
+                    sprintf(buff, "%s login the Game.", user.name);
                     DBG(YELLOW"Main Thread"NONE" :Add %s to %s sub_reactor.\n", user.name, (user.team ? "BLUE" : "RED"));
                     add_to_sub_reactor(&user);
+                    Show_Message(, , buff, 1);
                 }
             } else {
                 recv(events[i].data.fd, buff, sizeof(buff), 0);
