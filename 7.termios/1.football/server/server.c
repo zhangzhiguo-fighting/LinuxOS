@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
     if (!port) port = atoi(get_value(conf, "PORT")); //未指定端口
     court.width = atoi(get_value(conf, "COLS"));
     court.heigth = atoi(get_value(conf, "LINES"));
-    court.start.x = 1;
+    court.start.x = 3;
     court.start.y = 1;
 
     rteam = (struct User *)calloc(MAX, sizeof(struct User));
