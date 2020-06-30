@@ -6,6 +6,7 @@
 #include "../common/heart_beat.h"
 #include "../common/game.h"
 #include "../common/server_exit.h"
+#include "../common/server_re_draw.h"
 char *conf = "./server.conf"; //弄成全局的
 
 //struct Map court;
@@ -99,7 +100,17 @@ int main(int argc, char **argv) {
     struct sockaddr_in client;
     socklen_t len = sizeof(client);
     
-    Show_Message( , , "Waiting for Login.", 1 );
+    signal(14, re_draw);
+
+    struct itimerval itimer;
+    itimer.it_interval.tv_sec = 0;
+    itimer.it_interval.tv_usec = 50000;
+    itimer.it_value.tv_sec = 5;
+    itimer.it_value.tv_usec = 0;
+    
+    setitimer(ITIMER_REAL, &itimer, NULL);
+
+    Show_Message( , , "Waiting for Login.", 1 ); //sys 1
     while (1) {
         //w_gotoxy_puts(Message, 1, 1, "waiting for login");
         DBG(YELLOW"Main Thread"NONE" : before epoll_wait\n");
