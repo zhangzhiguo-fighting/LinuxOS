@@ -19,6 +19,9 @@ int repollfd, bepollfd;
 //int epoll_fd;
 int port = 0;
 
+struct Bpoint ball;
+struct BallStatus ball_status;
+
 int main(int argc, char **argv) {
     int opt, listener, epoll_fd;
     //int port = 0;
@@ -49,6 +52,9 @@ int main(int argc, char **argv) {
     court.heigth = atoi(get_value(conf, "LINES"));
     court.start.x = 3;
     court.start.y = 1;
+
+    ball.x = court.width / 2;
+    ball.y = court.heigth / 2;
 
     rteam = (struct User *)calloc(MAX, sizeof(struct User));
     bteam = (struct User *)calloc(MAX, sizeof(struct User));
