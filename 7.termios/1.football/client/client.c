@@ -147,10 +147,10 @@ int main(int argc, char **argv) {
         int c = getchar(); //getch 用UP，DOWN， LEFT， RIGHT
         switch (c) {
             case 'a':
-                ctl_msg.ctl.dirx -= 2;
+                ctl_msg.ctl.dirx -= 1;
                 break;
             case 'd':
-                ctl_msg.ctl.dirx += 2;
+                ctl_msg.ctl.dirx += 1;
                 break;
             case 'w':
                 ctl_msg.ctl.diry -= 1;
@@ -164,6 +164,14 @@ int main(int argc, char **argv) {
             case ' ':
                 show_strength();
                 break;
+            case 'j': {
+                struct FootBallMsg msg;
+                bzero(&msg, sizeof(msg));
+                msg.type = FT_CTL;
+                msg.ctl.action = ACTION_STOP;
+                send(sockfd, (void *)&msg, sizeof(msg), 0);
+                break;
+            }
             default:
                 break;
         }
