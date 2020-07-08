@@ -21,6 +21,7 @@ int port = 0;
 
 struct Bpoint ball;
 struct BallStatus ball_status;
+struct Score score;
 
 int main(int argc, char **argv) {
     int opt, listener, epoll_fd;

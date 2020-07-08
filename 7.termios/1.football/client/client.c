@@ -30,6 +30,7 @@ int main(int argc, char **argv) {
     struct LogRequest request;
     struct LogResponse response;
     pthread_t recv_t;
+    pthread_t re_draw_t;
     bzero(&request, sizeof(request));
     bzero(&chat_msg, sizeof(struct FootBallMsg));
     bzero(&ctl_msg, sizeof(struct FootBallMsg));
@@ -128,6 +129,7 @@ int main(int argc, char **argv) {
     pthread_create(&draw_t, NULL, draw, NULL);//Draw interface 
 #endif
     pthread_create(&recv_t, NULL, client_recv, NULL);
+    //pthread_create(&re_draw_t, NULL, re_draw, NULL);
     
 
     signal(14, send_ctl);
@@ -169,6 +171,14 @@ int main(int argc, char **argv) {
                 bzero(&msg, sizeof(msg));
                 msg.type = FT_CTL;
                 msg.ctl.action = ACTION_STOP;
+                send(sockfd, (void *)&msg, sizeof(msg), 0);
+                break;
+            }
+            case 'l': {
+                struct FootBallMsg msg;
+                bzero(&msg, sizeof(msg));
+                msg.type = FT_CTL;
+                msg.ctl.action = ACTION_CARRY;
                 send(sockfd, (void *)&msg, sizeof(msg), 0);
                 break;
             }
